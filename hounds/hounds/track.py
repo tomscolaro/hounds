@@ -3,6 +3,7 @@ from collections import defaultdict
 import os
 import matplotlib.pyplot as plt
 import shutil
+import time
 
 class Track:
     def __init__(self, values:pd.DataFrame, dims,  log_directory, global_config = {'parent_':'Overall'}):
@@ -39,17 +40,13 @@ class Track:
         return
 
     def log_track(self, values, res, measure): 
-        
-        # temp = []
-        # for val in values:
-
-        #     temp = self.anomaly_map[val]
-
-
-
         directory = self.log_directory +"/"+"/".join(values) +"/"
         # print(directory)
-        os.makedirs(directory)
+        # try:
+        os.makedirs(directory, exist_ok=True)
+        # except FileExistsError as err:
+            # print()
+            # 1
         # res.plot().cla()
         fig = res.plot()
         fig.savefig(directory+"{}chart.png".format(measure))
@@ -69,6 +66,7 @@ class Track:
             shutil.rmtree(dir_path)
             os.makedirs(dir_path) # Recreate the directory
             print(f"All contents of '{dir_path}' have been removed.")
+            time.sleep(3)
         except Exception as e:
             print(f"Error removing contents of '{dir_path}': {e}")
 

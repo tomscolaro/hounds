@@ -5,6 +5,8 @@ import seaborn as sns
 from pandas.plotting import register_matplotlib_converters
 from statsmodels.tsa.seasonal import STL
 from track import Track
+import argparse
+
 
 class Hounds:
     def __init__(self,
@@ -98,14 +100,22 @@ class Hounds:
         return  list(filter(lambda x: x not in ([ts_col] + dims), data_cols))
 
 if __name__ == "__main__":
-    df = pd.read_csv('./test/test.csv')
-    print(df.shape)
 
-    dims = ['dim_0', 'dim_1', 'dim_2']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', dest='file', type=str, help='Add File path')
+    parser.add_argument('--dims', dest='dims', nargs='+', help='Add Dim List')
+    parser.add_argument('--output_path', dest='output_path', type=str, help='Add output file path')
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.file)
+    print(df.shape, df.columns)
+    dims = args.dims
+
+    print(type(dims))
     unqiue_values = df.copy()[dims].drop_duplicates() #.sort_values(dims)
     print("Search Path Size: {}".format(unqiue_values.shape[0]))
 
-    tracks = Track(unqiue_values, dims, log_directory="log")
+    tracks = Track(unqiue_values, dims, log_directory=args.output_path)
 
     hounds = Hounds(df, dims,   track=tracks)
 

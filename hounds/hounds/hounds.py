@@ -1,33 +1,22 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import seaborn as sns
-from pandas.plotting import register_matplotlib_converters
 from statsmodels.tsa.seasonal import STL
 from track import Track
 import argparse
-
+import json
 
 class Hounds:
     def __init__(self,
                  data: pd.DataFrame,
                  dims:list, 
-                 analysis_params:dict={
-                                    "residual-confidence-threshold":3,
-                },  
-                 data_params:dict= {'time-series-column-name':"timestamp",  
-                                    "aggs":{
-                                        "measure_0": "sum",
-                                        "measure_1":"sum", 
-                                        "measure_2":"sum"
-                                        }
-                },
+                 analysis_params,
+                 data_params,
                 track:Track=None):
         
         self.track = track
         self.analyis_params = analysis_params
 
-        self.aggs = data_params['aggs']
+        # self.aggs = data_params['aggs']
         self.time_series_column = data_params['time-series-column-name']
         
         self.measures = self.define_measures(self.time_series_column, dims, data.columns)
@@ -50,26 +39,34 @@ class Hounds:
             # print("filtered and agg'd data shape {} for track {}".format(agg_data.shape, active_track))
             anomaly_detected = []    
             for measure in self.measures:
+                
+
+                #if the average of a measure falls below our anomaly floor, don't even run the anomaly detection on it
+                if agg_data[measure].mean() < self.analyis_params['anomaly-floor'][measure]:
+                    continue
+
                 residuals, res_obj =  self.decompose_series(agg_data[measure])
                 anomaly_idx = self.detect_anomaly_from_residuals(residuals, \
                                                                self.analyis_params['residual-confidence-threshold'])
-            
-                if anomaly_idx:
+
+                periods_behind = np.max(anomaly_idx) - agg_data.shape[0] 
+
+                if periods_behind < self.analyis_params['lookback-limit']:
                     anomaly_detected.append(measure)
-                    self.track.log_track(active_track, res_obj, measure)
+                    self.track.log_track(active_track, agg_data[self.time_series_column], res_obj, measure)
+                    
+                    
+                    self.track.update_anomaly_map(active_track, res_obj, measure)
 
             if anomaly_detected:    
-                self.track.identify_track(active_track)
-                # print("######################################################")
-            
+                self.track.identify_track(active_track) # reinserts tracks of interest
+        
             active_track = self.track.get_active_track()
         
-
-        self.track.write_anomaly_map()
         return
 
     def decompose_series(self, data_series):
-        stl = STL(data_series,6)
+        stl = STL(data_series,self.analyis_params['stl-periods'])
         res = stl.fit()
         return res.resid, res #get residual values from result object
     
@@ -90,33 +87,47 @@ class Hounds:
         for col, condition in conditions.items():
             mask &= data_copy[col] == condition
         return data_copy[mask]
+    
     def agg_level(self, data, relevant_dims):
-        # print("Aggregating at Level: {}".format([self.time_series_column]+relevant_dims))
         return data.copy().groupby([self.time_series_column]+relevant_dims )\
-                        .agg(self.aggs)\
+                        .sum()\
                         .reset_index()
 
     def define_measures(self,ts_col, dims, data_cols):
         return  list(filter(lambda x: x not in ([ts_col] + dims), data_cols))
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', dest='file', type=str, help='Add File path')
     parser.add_argument('--dims', dest='dims', nargs='+', help='Add Dim List')
-    parser.add_argument('--output_path', dest='output_path', type=str, help='Add output file path')
+    parser.add_argument('--output_path', dest='output_path', type=str, help='Add output file path') 
+    parser.add_argument('--timestamp-col', dest='timestamp_col', default='TIMESTAMP', type=str)  
+    parser.add_argument('--n-period-lookback-limit', dest='lookback_limit', default=3, type=int)
+    parser.add_argument('--resid-stdev-thres', dest='resid_thres', default=3, type=float)
+    parser.add_argument('--stl-periods', dest='stl_periods', default=12, type=int)
+    parser.add_argument('--anomaly-floor', dest='anomaly_floor', type=json.loads, help='Dictionary in JSON format')
     args = parser.parse_args()
 
     df = pd.read_csv(args.file)
     print(df.shape, df.columns)
+  
     dims = args.dims
+    analysis_params = {
+        "residual-confidence-threshold":args.resid_thres,
+        "lookback-limit": args.lookback_limit,
+        "stl-periods": args.stl_periods,
+        'anomaly-floor': args.anomaly_floor
+    }  
+    
+    data_params = {
+        'time-series-column-name':args.timestamp_col,  
+    }
 
-    print(type(dims))
     unqiue_values = df.copy()[dims].drop_duplicates() #.sort_values(dims)
+
+
     print("Search Path Size: {}".format(unqiue_values.shape[0]))
-
     tracks = Track(unqiue_values, dims, log_directory=args.output_path)
-
-    hounds = Hounds(df, dims,   track=tracks)
-
+    hounds = Hounds(df, dims,  analysis_params, data_params,  track=tracks)
     hounds.run_hounds()
+

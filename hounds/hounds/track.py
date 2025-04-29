@@ -2,13 +2,14 @@ import pandas as pd
 from collections import defaultdict
 import os
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import seaborn as sns
 import shutil
 import time
 
 class Track:
     def __init__(self, values:pd.DataFrame, dims,  log_directory, global_config = {'parent_':'Overall'}):
         self.global_config = global_config
-
         self.search_paths = values.copy()
         self.search_paths[ global_config['parent_']] =  global_config['parent_']
         self.search_paths = self.search_paths[[global_config['parent_']] + dims].reset_index()
@@ -22,33 +23,63 @@ class Track:
         self.log_directory = log_directory      
         self.delete_all_files(self.log_directory)
         
-
         self.parent_track = global_config['parent_']
 
         self.track_manifest = [[self.parent_track]]
         self.max_level_idx = 0
         self.active_track = None
 
-
-
         self.anomaly_map = {"Overall":[]}
         return
     
-
-    def write_anomaly_map(self):
-    
+    def update_anomaly_map(self):
+        
+        
+        
+        
+        
+        
+        
         return
+        
 
-    def log_track(self, values, res, measure): 
+    def log_track(self, values, ts, res, measure): 
+        """
+        this function takes these params:
+            values: the current track. ie Overall/dim0/dim1
+            ts: the aggregated data time series currently being analyzed
+            res: the residual object created from the statsmodels STL fit object 
+            measure: This is the measure currently being plotted
+
+        this function plots to the log output directory and returns no objects 
+            
+        """
+
+
         directory = self.log_directory +"/"+"/".join(values) +"/"
-        # print(directory)
-        # try:
+
         os.makedirs(directory, exist_ok=True)
-        # except FileExistsError as err:
-            # print()
-            # 1
-        # res.plot().cla()
-        fig = res.plot()
+
+        fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True)
+        axes = axes.flatten()  # easier to index
+        d = {"Date": ts, "Residuals": res.resid, "Seasonal":res.seasonal, "Trend": res.trend, "Series":res.observed}
+        data = pd.DataFrame.from_dict(d)
+
+        # Plot each series in its own subplot
+        for i, series in enumerate(["Series", "Trend", "Seasonal", "Residuals"]):
+            ax = axes[i]
+            sns.lineplot(data, x='Date', y=series, ax=ax)
+            ax.tick_params(axis='x', rotation=45)
+            ax.set_title(series)
+            ax.set_xlabel('Date')
+            ax.set_ylabel('Value')
+
+            # Format x-axis dates
+            ax.xaxis.set_major_locator(mdates.MonthLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+        
+        # Adjust layout
+        plt.tight_layout()
         fig.savefig(directory+"{}chart.png".format(measure))
         plt.close('all')
         return
@@ -72,8 +103,7 @@ class Track:
 
     def get_active_track(self):
         print("Track is currently {} items".format(len(self.track_manifest)))  
-        # print("Track contains {}".format(self.track_manifest))
-        # print("Active Track is {}".format(active_track))                
+   
         if not self.track_manifest and self.max_level_idx < len(self.dim)-1:
             self.identify_track(self.active_track)
 
@@ -111,8 +141,6 @@ class Track:
         for col, condition in conditions.items():
             mask &= self.search_paths[col] == condition
 
-
-    
         return self.search_paths[mask]
 
 
@@ -126,11 +154,6 @@ class Track:
             relevant_dims.append(dim)
             track.append(val)
             conditions[dim] = val
-            # if idx == 0:
-            #     filter_str += " {} == '{}' ".format(dim, val)
-            # else:
-            #     filter_str += "& {} == '{}'".format(dim,val)
-        # return filter_str, relevant_dims, track
 
         return conditions, relevant_dims, track
 
@@ -138,25 +161,8 @@ class Track:
 if __name__ == "__main__":
     # print("Release the hounds...")
     df = pd.read_csv('./test/test.csv')
-    print(df.shape)
-
+    # print(df.shape)
     dims = ['dim_0', 'dim_1', 'dim_2']
     unqiue_values = df[dims].drop_duplicates().sort_values(dims)
 
-    # print("#########################################")
-    # # print(unqiue_values)
-
-    # print("#########################################")
-
-    # tracks = Track(unqiue_values, dims, "log")
-
-    # print(len(tracks.hierarchy))
-    # print(tracks.filter_incrementer)
-
-    # tracks.get_data_filters()
-    # print(tracks.query_counter)
-    print(df['timestamp'].unique())
-
-
-
-
+    # print(df['timestamp'].unique())

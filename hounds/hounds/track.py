@@ -6,6 +6,7 @@ import matplotlib.dates as mdates
 import seaborn as sns
 import shutil
 import time
+import numpy as np
 
 class Track:
     def __init__(self, values:pd.DataFrame, dims,  log_directory, global_config = {'parent_':'Overall'}):
@@ -29,17 +30,48 @@ class Track:
         self.max_level_idx = 0
         self.active_track = None
 
-        self.anomaly_map = {"Overall":[]}
+        self.anomaly_map = []
         return
     
-    def update_anomaly_map(self):
+
+
+    def write_anomaly_map(self):
+        data = pd.DataFrame.from_records(self.anomaly_map)
         
+        data = (
+        data.groupby(self.dim, dropna=False)
+            .agg(lambda x: x.dropna().iloc[0] if not x.dropna().empty else None)
+            .reset_index()
+        )
+
+        data.fillna("", inplace=True)
+
+        data.to_csv(self.log_directory+"/"+"manifest.csv", index=False)
+
+
+        return
+    
+    def update_anomaly_map(self, dims, measures, active_track, res_obj,  active_measure):    
         
-        
-        
-        
-        
-        
+        temp_map = {}
+
+        for idx, dim in enumerate(dims):
+            if idx > len(active_track) - 1:
+                temp_map[dim] = None
+            else:        
+                temp_map[dim] = active_track[idx]
+
+        for idx, measure in enumerate(measures):
+            if measure == active_measure:
+                temp_map[measure + " Value Total"] = res_obj.observed.sum()
+                temp_map[measure + " Value Average"] = res_obj.observed.mean()
+
+                res_min = res_obj.resid.min()
+                res_max = res_obj.resid.max()
+                mag = res_max if np.abs(res_max) > np.abs(res_min) else res_min
+                temp_map[measure + " Magnitude Residual Spike"] = mag
+
+        self.anomaly_map.append(temp_map)
         return
         
 
@@ -77,6 +109,15 @@ class Track:
             # Format x-axis dates
             ax.xaxis.set_major_locator(mdates.MonthLocator())
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+                        # Add value labels every 5 points
+            for _, row in data.iloc[::10].iterrows():
+                ax.text(
+                    row['Date'], row[series] +2,
+                    f"{row[series]:.1f}",
+                    fontsize=8, color='black',
+                    ha='center', va='bottom'
+                )
         
         # Adjust layout
         plt.tight_layout()

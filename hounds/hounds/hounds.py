@@ -56,13 +56,15 @@ class Hounds:
                     self.track.log_track(active_track, agg_data[self.time_series_column], res_obj, measure)
                     
                     
-                    self.track.update_anomaly_map(active_track, res_obj, measure)
+                    self.track.update_anomaly_map(self.dims, self.measures, active_track, res_obj, measure)
 
             if anomaly_detected:    
                 self.track.identify_track(active_track) # reinserts tracks of interest
         
             active_track = self.track.get_active_track()
         
+
+        self.track.write_anomaly_map()
         return
 
     def decompose_series(self, data_series):
@@ -101,8 +103,8 @@ if __name__ == "__main__":
     parser.add_argument('--file', dest='file', type=str, help='Add File path')
     parser.add_argument('--dims', dest='dims', nargs='+', help='Add Dim List')
     parser.add_argument('--output_path', dest='output_path', type=str, help='Add output file path') 
-    parser.add_argument('--timestamp-col', dest='timestamp_col', default='TIMESTAMP', type=str)  
-    parser.add_argument('--n-period-lookback-limit', dest='lookback_limit', default=3, type=int)
+    parser.add_argument('--timestamp-col', dest='timestamp_col', default='timestamp', type=str)  
+    parser.add_argument('--n-period-lookback-limit', dest='lookback_limit', default=100, type=int)
     parser.add_argument('--resid-stdev-thres', dest='resid_thres', default=3, type=float)
     parser.add_argument('--stl-periods', dest='stl_periods', default=12, type=int)
     parser.add_argument('--anomaly-floor', dest='anomaly_floor', type=json.loads, help='Dictionary in JSON format')

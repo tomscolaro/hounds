@@ -42,7 +42,7 @@ class Hounds:
                 
 
                 #if the average of a measure falls below our anomaly floor, don't even run the anomaly detection on it
-                if agg_data[measure].mean() < self.analyis_params['anomaly-floor'][measure]:
+                if agg_data[measure].mean() < self.analyis_params['anomaly-floor'][measure] or agg_data.shape[0] <= 1:
                     continue
 
                 residuals, res_obj =  self.decompose_series(agg_data[measure])

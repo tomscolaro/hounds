@@ -50,7 +50,7 @@ class Hounds:
                                                                self.analyis_params['residual-confidence-threshold'])
 
                 # print(np.max(np.where(anomaly_idx)[0]))
-                indices  = np.where(anomaly_idx == 1)[0]
+                indices  = np.where(anomaly_idx)[0]
                 if indices.size == 0:
                     continue
 

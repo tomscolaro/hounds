@@ -50,7 +50,11 @@ class Hounds:
                                                                self.analyis_params['residual-confidence-threshold'])
 
                 # print(np.max(np.where(anomaly_idx)[0]))
-                periods_behind = agg_data.shape[0]  - np.max(np.where(anomaly_idx == 1)[0])
+                indices  = np.where(anomaly_idx == 1)[0]
+                if indices.size == 0:
+                    continue
+
+                periods_behind = agg_data.shape[0]  - np.max(indices)
   
                 if periods_behind < self.analyis_params['lookback-limit']:
                     anomaly_detected.append(measure)

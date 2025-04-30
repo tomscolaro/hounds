@@ -79,7 +79,7 @@ class Track:
         this function plots to the log output directory and returns no objects 
             
         """
-        print(ts)
+        # print(ts)
 
         directory = self.log_directory +"/"+"/".join(values) +"/"
         os.makedirs(directory, exist_ok=True)

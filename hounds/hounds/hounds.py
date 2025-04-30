@@ -57,8 +57,9 @@ class Hounds:
   
                 if periods_behind < self.analyis_params['lookback-limit']:
                     anomaly_detected.append(measure)
-                    self.track.log_track(active_track, agg_data[self.time_series_column], res_obj, measure)
                     self.track.update_anomaly_map(self.dims, self.measures, active_track, res_obj, measure)
+                    self.track.log_track(active_track, agg_data[self.time_series_column], res_obj, measure)
+                    
 
             if anomaly_detected:    
                 self.track.identify_track(active_track) # reinserts tracks of interest

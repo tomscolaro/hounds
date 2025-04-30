@@ -31,6 +31,8 @@ class Track:
         self.active_track = None
 
         self.anomaly_map = []
+
+        sns.set_theme()
         return
     
     def write_anomaly_map(self):
@@ -86,21 +88,27 @@ class Track:
 
         fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True)
         axes = axes.flatten()  # easier to index
-        d = {"Date": ts.values, "Residuals": res.resid, "Seasonal":res.seasonal, "Trend": res.trend, "Series":res.observed}
+        d = {"Date": pd.to_datetime(ts), "Residuals": res.resid, "Seasonal":res.seasonal, "Trend": res.trend, "Series":res.observed}
         data = pd.DataFrame.from_dict(d)
+
+        # print(data.head(10))
 
         # Plot each series in its own subplot
         for i, series in enumerate(["Series", "Trend", "Seasonal", "Residuals"]):
             ax = axes[i]
-            sns.lineplot(data, x='Date', y=series, ax=ax)
+            sns.lineplot(data, x='Date', y=series, ax=ax, palette=['green'])
             ax.tick_params(axis='x', rotation=45)
             ax.set_title(series)
             ax.set_xlabel('Date')
             ax.set_ylabel(series)
 
             # Format x-axis dates
-            ax.xaxis.set_major_locator(mdates.MonthLocator())
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+            # ax.xaxis.set_major_locator(mdates.MonthLocator())
+            # Set x-axis ticks to show every 10th date
+            ax.set_xticks(data['Date'][::10])
+            ax.set_xticklabels(data['Date'][::10].dt.strftime('%Y-%m'), rotation=45, ha='right')
+
+            # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 
                         # Add value labels every 5 points
             for _, row in data.iloc[::5].iterrows():

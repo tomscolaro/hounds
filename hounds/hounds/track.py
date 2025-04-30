@@ -43,7 +43,7 @@ class Track:
             .agg(lambda x: x.dropna().iloc[0] if not x.dropna().empty else None)
             .reset_index()
         )
-
+        data.fillna("##", inplace=True)
         data.to_csv(self.log_directory+"/"+"manifest.csv", index=False)
         return
     
@@ -96,7 +96,7 @@ class Track:
         # Plot each series in its own subplot
         for i, series in enumerate(["Series", "Trend", "Seasonal", "Residuals"]):
             ax = axes[i]
-            sns.lineplot(data, x='Date', y=series, ax=ax, palette=['green'])
+            sns.lineplot(data, x='Date', y=series, ax=ax)
             ax.tick_params(axis='x', rotation=45)
             ax.set_title(series)
             ax.set_xlabel('Date')

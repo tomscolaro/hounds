@@ -52,7 +52,7 @@ class Hounds:
                 indices  = np.where(anomaly_idx)[0]
                 if indices.size == 0:
                     continue
-
+    
                 periods_behind = agg_data.shape[0]  - np.max(indices)
   
                 if periods_behind < self.analyis_params['lookback-limit']:

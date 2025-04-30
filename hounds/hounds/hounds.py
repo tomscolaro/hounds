@@ -44,8 +44,8 @@ class Hounds:
                 if agg_data[measure].mean() < self.analyis_params['anomaly-floor'][measure] or agg_data.shape[0] <= 1:
                     continue
 
-                residuals, res_obj =  self.decompose_series(agg_data[measure])
-                anomaly_idx = self.detect_anomaly_from_residuals(residuals, \
+                res_obj =  self.decompose_series(agg_data[measure])
+                anomaly_idx = self.detect_anomaly_from_residuals(res_obj.resid, \
                                                                self.analyis_params['residual-confidence-threshold'])
 
                 # print(np.max(np.where(anomaly_idx)[0]))
@@ -72,7 +72,7 @@ class Hounds:
     def decompose_series(self, data_series):
         stl = STL(data_series,self.analyis_params['stl-periods'],  robust=self.analyis_params['robust'])
         res = stl.fit()
-        return res.resid, res #get residual values from result object
+        return res #get residual values from result object
     
     def detect_anomaly_from_residuals(self, res, thres):
         st_dev = res.std()
@@ -86,10 +86,11 @@ class Hounds:
 
     def filter_and_aggregate_data(self, active_track):
         query, relevant_dims, track = self.track.get_data_filters(active_track)
-
         filtered_data =  self.filter_data(query)
         agg_data = self.agg_level(filtered_data, relevant_dims)
         return agg_data, relevant_dims, track
+
+
 
     def filter_data(self, conditions):
         data_copy = self.data.copy()
@@ -117,13 +118,14 @@ if __name__ == "__main__":
     parser.add_argument('--stl-periods', dest='stl_periods', default=12, type=int)
     parser.add_argument('--anomaly-floor', dest='anomaly_floor', type=json.loads, help='Dictionary in JSON format')
     parser.add_argument('--robust', dest='robust', type=bool, default=True, help='Dictionary in JSON format')
-
     parser.add_argument('--analysis-type', dest='analysis_type', type=str, default='both', help='Dictionary in JSON format')
     args = parser.parse_args()
 
     df = pd.read_csv(args.file)
     print(df.shape, df.columns)
   
+
+
     dims = args.dims
     analysis_params = {
         "residual-confidence-threshold":args.resid_thres,

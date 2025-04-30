@@ -49,7 +49,8 @@ class Hounds:
                 anomaly_idx = self.detect_anomaly_from_residuals(residuals, \
                                                                self.analyis_params['residual-confidence-threshold'])
 
-                periods_behind = agg_data.shape[0]  - np.argmax(anomaly_idx)  
+                # print(np.max(np.where(anomaly_idx)[0]))
+                periods_behind = agg_data.shape[0]  - np.max(np.where(anomaly_idx)[0])
 
                 if periods_behind < self.analyis_params['lookback-limit']:
                     anomaly_detected.append(measure)
@@ -72,7 +73,7 @@ class Hounds:
     
     def detect_anomaly_from_residuals(self, res, thres):
         st_dev = res.std()
-        return np.any(np.abs(res) > st_dev*thres)
+        return np.abs(res) > st_dev*thres
 
     def filter_and_aggregate_data(self, active_track):
         query, relevant_dims, track = self.track.get_data_filters(active_track)

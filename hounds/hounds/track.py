@@ -33,8 +33,6 @@ class Track:
         self.anomaly_map = []
         return
     
-
-
     def write_anomaly_map(self):
         data = pd.DataFrame.from_records(self.anomaly_map)
         
@@ -44,15 +42,10 @@ class Track:
             .reset_index()
         )
 
-        data.fillna("-999", inplace=True)
-
         data.to_csv(self.log_directory+"/"+"manifest.csv", index=False)
-
-
         return
     
     def update_anomaly_map(self, dims, measures, active_track, res_obj,  active_measure):    
-        
         temp_map = {}
 
         for idx, dim in enumerate(dims):
@@ -86,10 +79,9 @@ class Track:
         this function plots to the log output directory and returns no objects 
             
         """
-
+        print(ts)
 
         directory = self.log_directory +"/"+"/".join(values) +"/"
-
         os.makedirs(directory, exist_ok=True)
 
         fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True)
@@ -111,7 +103,7 @@ class Track:
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 
                         # Add value labels every 5 points
-            for _, row in data.iloc[::10].iterrows():
+            for _, row in data.iloc[::5].iterrows():
                 ax.text(
                     row['Date'], row[series] +2,
                     f"{row[series]:.1f}",
@@ -144,13 +136,10 @@ class Track:
 
     def get_active_track(self):
         print("Track is currently {} items".format(len(self.track_manifest)))  
-   
         if not self.track_manifest and self.max_level_idx < len(self.dim)-1:
             self.identify_track(self.active_track)
-
         if not self.track_manifest:
             return []
-        
         active_track = self.track_manifest.pop(0)
         self.active_track = active_track
         return active_track

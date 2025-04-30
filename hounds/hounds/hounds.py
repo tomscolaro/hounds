@@ -49,7 +49,7 @@ class Hounds:
                 anomaly_idx = self.detect_anomaly_from_residuals(residuals, \
                                                                self.analyis_params['residual-confidence-threshold'])
 
-                periods_behind = agg_data.shape[0]  - np.max(anomaly_idx)  
+                periods_behind = agg_data.shape[0]  - np.argmax(anomaly_idx)  
 
                 if periods_behind < self.analyis_params['lookback-limit']:
                     anomaly_detected.append(measure)

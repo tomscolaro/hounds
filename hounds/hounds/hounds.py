@@ -71,7 +71,7 @@ class Hounds:
         return
 
     def decompose_series(self, data_series):
-        stl = STL(data_series,self.analyis_params['stl-periods'])
+        stl = STL(data_series,self.analyis_params['stl-periods'],  robust=self.analyis_params['robust'])
         res = stl.fit()
         return res.resid, res #get residual values from result object
     
@@ -111,6 +111,7 @@ if __name__ == "__main__":
     parser.add_argument('--resid-stdev-thres', dest='resid_thres', default=3, type=float)
     parser.add_argument('--stl-periods', dest='stl_periods', default=12, type=int)
     parser.add_argument('--anomaly-floor', dest='anomaly_floor', type=json.loads, help='Dictionary in JSON format')
+    parser.add_argument('--robust', dest='robust', type=bool, default=True, help='Dictionary in JSON format')
     args = parser.parse_args()
 
     df = pd.read_csv(args.file)
@@ -121,7 +122,8 @@ if __name__ == "__main__":
         "residual-confidence-threshold":args.resid_thres,
         "lookback-limit": args.lookback_limit,
         "stl-periods": args.stl_periods,
-        'anomaly-floor': args.anomaly_floor
+        'anomaly-floor': args.anomaly_floor,
+        "robust": args.robust
     }  
     
     data_params = {

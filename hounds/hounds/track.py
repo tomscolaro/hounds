@@ -86,7 +86,7 @@ class Track:
 
         fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True)
         axes = axes.flatten()  # easier to index
-        d = {"Date": ts, "Residuals": res.resid, "Seasonal":res.seasonal, "Trend": res.trend, "Series":res.observed}
+        d = {"Date": ts.values, "Residuals": res.resid, "Seasonal":res.seasonal, "Trend": res.trend, "Series":res.observed}
         data = pd.DataFrame.from_dict(d)
 
         # Plot each series in its own subplot

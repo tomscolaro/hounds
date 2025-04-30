@@ -105,15 +105,15 @@ class Track:
             # Format x-axis dates
             # ax.xaxis.set_major_locator(mdates.MonthLocator())
             # Set x-axis ticks to show every 10th date
-            ax.set_xticks(data['Date'][::10])
-            ax.set_xticklabels(data['Date'][::10].dt.strftime('%Y-%m'), rotation=45, ha='right')
+            ax.set_xticks(data['Date'][::5])
+            ax.set_xticklabels(data['Date'][::5].dt.strftime('%Y-%m-%d'), rotation=45, ha='right')
 
             # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 
                         # Add value labels every 5 points
             for _, row in data.iloc[::5].iterrows():
                 ax.text(
-                    row['Date'], row[series] +2,
+                    row['Date'], row[series] +3,
                     f"{row[series]:.1f}",
                     fontsize=8, color='black',
                     ha='center', va='bottom'

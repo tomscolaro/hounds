@@ -91,7 +91,7 @@ class Hounds:
         mask = pd.Series(True, index=data_copy.index)
         for col, condition in conditions.items():
             mask &= data_copy[col] == condition
-        return data_copy[mask]
+        return data_copy[mask].reset_index()
     
     def agg_level(self, data, relevant_dims):
         return data.copy().groupby([self.time_series_column]+relevant_dims )\

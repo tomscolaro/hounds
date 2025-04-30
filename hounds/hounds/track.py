@@ -104,7 +104,7 @@ class Track:
             ax.tick_params(axis='x', rotation=45)
             ax.set_title(series)
             ax.set_xlabel('Date')
-            ax.set_ylabel('Value')
+            ax.set_ylabel(series)
 
             # Format x-axis dates
             ax.xaxis.set_major_locator(mdates.MonthLocator())

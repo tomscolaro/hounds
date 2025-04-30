@@ -13,7 +13,7 @@ class Track:
         self.global_config = global_config
         self.search_paths = values.copy()
         self.search_paths[ global_config['parent_']] =  global_config['parent_']
-        self.search_paths = self.search_paths[[global_config['parent_']] + dims].reset_index()
+        self.search_paths = self.search_paths[[global_config['parent_']] + dims].reset_index().astype(str)
 
         self.dim = [global_config['parent_']] + dims
         
@@ -120,7 +120,7 @@ class Track:
                 )
         
         # Adjust layout
-        plt.tight_layout()
+        # plt.tight_layout()
         fig.savefig(directory+"{}chart.png".format(measure))
         plt.close('all')
         return

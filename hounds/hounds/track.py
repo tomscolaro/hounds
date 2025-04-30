@@ -44,7 +44,7 @@ class Track:
             .reset_index()
         )
 
-        data.fillna("", inplace=True)
+        data.fillna("#", inplace=True)
 
         data.to_csv(self.log_directory+"/"+"manifest.csv", index=False)
 

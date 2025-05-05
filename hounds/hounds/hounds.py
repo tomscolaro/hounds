@@ -82,7 +82,7 @@ class Hounds:
         
         scores = clf.decision_function(data_series.values.reshape(-1, 1))
 
-        threshold = np.percentile(scores, 5)
+        threshold = np.percentile(scores, self.analyis_params['percentile_thres'])
 
 
 
@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('--analysis-type', dest='analysis_type', type=str, default='both', help='Dictionary in JSON format')
     parser.add_argument('--model', dest='model', type=str, default='stl', help='Used to select the anomaly model type')
     parser.add_argument('--contamination', dest='contamination', type=float, default=.01, help='Used to select the anomaly model type')
+    parser.add_argument('--percentile', dest='percentile', type=int, default=1, help='Used to select the anomaly model type')
 
     parser.add_argument('--estimators', dest='estimators', type=int, default=100, help='Used to select the anomaly model type')
     args = parser.parse_args()
@@ -172,7 +173,8 @@ if __name__ == "__main__":
         'analysis-type': args.analysis_type,
         "model":args.model,
         "contamination": args.contamination,
-        "estimators" : args.estimators
+        "estimators" : args.estimators,
+        "percentile_thres": args.percentile
     }  
     
     data_params = {

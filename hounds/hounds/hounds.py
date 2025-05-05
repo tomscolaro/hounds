@@ -148,9 +148,9 @@ if __name__ == "__main__":
     parser.add_argument('--robust', dest='robust', type=bool, default=True, help='Dictionary in JSON format')
     parser.add_argument('--analysis-type', dest='analysis_type', type=str, default='both', help='Dictionary in JSON format')
     parser.add_argument('--model', dest='model', type=str, default='stl', help='Used to select the anomaly model type')
-    parser.add_argument('--contamination', dest='contamination', type=str, default='stl', help='Used to select the anomaly model type')
+    parser.add_argument('--contamination', dest='contamination', type=float, default=.01, help='Used to select the anomaly model type')
 
-    parser.add_argument('--estimators', dest='estimators', type=str, default='stl', help='Used to select the anomaly model type')
+    parser.add_argument('--estimators', dest='estimators', type=int, default=100, help='Used to select the anomaly model type')
     args = parser.parse_args()
 
     df = pd.read_csv(args.file)

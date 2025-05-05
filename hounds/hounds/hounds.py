@@ -90,10 +90,10 @@ class Hounds:
                 mult = (data_series.values > data_series.values.mean())
             case "negative":
                 mult = (data_series.values <= data_series.values.mean())
-                
+
             case _:
                 mult = 1
-        print(((scores < threshold) * mult  ).astype(int))
+        # print(((scores < threshold) * mult  ).astype(int))
         return ((scores < threshold) * mult  ).astype(int)
 
     def resid_anomaly_detection(self, agg, measure, active_track):

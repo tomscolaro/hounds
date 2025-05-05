@@ -47,7 +47,105 @@ class Track:
         data.to_csv(self.log_directory+"/"+"manifest.csv", index=False)
         return
     
-    def update_anomaly_map(self, dims, measures, active_track, res_obj,  active_measure):    
+    def iso_update_anomaly_map(self, agg, dims, measures, active_track, indices, active_measure):    
+        temp_map = {}
+
+        for idx, dim in enumerate(dims):
+            if idx > len(active_track) - 1:
+                temp_map[dim] = None
+            else:        
+                temp_map[dim] = active_track[idx]
+
+        for idx, measure in enumerate(measures):
+            if measure == active_measure:
+                temp_map[measure + " Value Total"] = agg[active_measure].sum()
+                temp_map[measure + " Value Average"] = agg[active_measure].mean()
+
+                
+                res_min = agg.loc[indices][measure].min()
+                res_max = agg.loc[indices][measure].max()
+                mag = res_max if np.abs(res_max) > np.abs(res_min) else res_min
+                temp_map[measure + " Outlier Spike"] = mag
+
+        self.anomaly_map.append(temp_map)
+        return
+        
+
+    def iso_log_track(self,agg, values, ts, indices, measure): 
+        """
+        this function takes these params:
+            values: the current track. ie Overall/dim0/dim1
+            ts: the aggregated data time series currently being analyzed
+            res: the residual object created from the statsmodels STL fit object 
+            measure: This is the measure currently being plotted
+
+        this function plots to the log output directory and returns no objects 
+            
+        """
+        # print(ts)
+
+        directory = self.log_directory +"/"+"/".join(values) +"/"
+        os.makedirs(directory, exist_ok=True)
+
+        fig, axes = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
+        axes = axes.flatten()  # easier to index
+        d = {"Date": pd.to_datetime(ts), "Series": agg[measure]}
+        data = pd.DataFrame.from_dict(d)
+
+
+        # Plot each series in its own subplot
+        for i, series in enumerate(["Series"]):
+            ax = axes[i]
+            sns.lineplot(data, x='Date', y=series, ax=ax)
+            ax.tick_params(axis='x', rotation=45)
+            ax.set_title(series)
+            ax.set_xlabel('Date')
+            ax.set_ylabel(series)
+
+            # Format x-axis dates
+            # ax.xaxis.set_major_locator(mdates.MonthLocator())
+            # Set x-axis ticks to show every 10th date
+            ax.set_xticks(data['Date'][::5])
+            ax.set_xticklabels(data['Date'][::5].dt.strftime('%Y-%m-%d'), rotation=45, ha='right')
+
+            # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+                        # Add value labels every 5 points
+            for _, row in data.iloc[::5].iterrows():
+                ax.text(
+                    row['Date'], row[series] +3,
+                    f"{row[series]:.1f}",
+                    fontsize=8, color='black',
+                    ha='center', va='bottom'
+                )
+        
+        # Adjust layout
+        # plt.tight_layout()
+        fig.savefig(directory+"{}chart.png".format(measure))
+        plt.close('all')
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def resid_update_anomaly_map(self, dims, measures, active_track, res_obj,  active_measure):    
         temp_map = {}
 
         for idx, dim in enumerate(dims):
@@ -70,7 +168,7 @@ class Track:
         return
         
 
-    def log_track(self, values, ts, res, measure): 
+    def resid_log_track(self, values, ts, res, measure): 
         """
         this function takes these params:
             values: the current track. ie Overall/dim0/dim1

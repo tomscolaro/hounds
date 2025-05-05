@@ -77,7 +77,7 @@ class Hounds:
         return
     
     def iso_forest(self,data_series):  
-        clf = IsolationForest(random_state=0, contamination=.1, n_estimators=300, bootstrap=True)
+        clf = IsolationForest(random_state=0, contamination=self.analyis_params['contamination'], n_estimators=self.analyis_params['estimators'], bootstrap=True)
         t = clf.fit_predict(data_series.values.reshape(-1,1))
         # clf.predict)
         return t
@@ -148,6 +148,9 @@ if __name__ == "__main__":
     parser.add_argument('--robust', dest='robust', type=bool, default=True, help='Dictionary in JSON format')
     parser.add_argument('--analysis-type', dest='analysis_type', type=str, default='both', help='Dictionary in JSON format')
     parser.add_argument('--model', dest='model', type=str, default='stl', help='Used to select the anomaly model type')
+    parser.add_argument('--contamination', dest='contamination', type=str, default='stl', help='Used to select the anomaly model type')
+
+    parser.add_argument('--estimators', dest='estimators', type=str, default='stl', help='Used to select the anomaly model type')
     args = parser.parse_args()
 
     df = pd.read_csv(args.file)
@@ -161,7 +164,9 @@ if __name__ == "__main__":
         'anomaly-floor': args.anomaly_floor,
         "robust": args.robust,
         'analysis-type': args.analysis_type,
-        "model":args.model
+        "model":args.model,
+        "contamination": args.contamination,
+        "estimators" : args.estimators
     }  
     
     data_params = {

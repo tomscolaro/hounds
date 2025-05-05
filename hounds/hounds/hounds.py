@@ -63,7 +63,7 @@ class Hounds:
 
     def iso_anomaly_detection(self, agg, measure, active_track):
         res = self.iso_forest(agg[measure])
-        indices = np.where(res == 0)[0]
+        indices = np.where(res == 1)[0]
         # print(anomaly_idx)
         if indices.size == 0:
                 return

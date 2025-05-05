@@ -61,7 +61,7 @@ class Track:
                 temp_map[measure + " Value Total"] = agg[active_measure].sum()
                 temp_map[measure + " Value Average"] = agg[active_measure].mean()
 
-                
+
                 res_min = agg.loc[indices][measure].min()
                 res_max = agg.loc[indices][measure].max()
                 mag = res_max if np.abs(res_max) > np.abs(res_min) else res_min
@@ -109,7 +109,6 @@ class Track:
             ax.set_xticklabels(data['Date'][::5].dt.strftime('%Y-%m-%d'), rotation=45, ha='right')
 
             # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-
                         # Add value labels every 5 points
             for _, row in data.iloc[::5].iterrows():
                 ax.text(

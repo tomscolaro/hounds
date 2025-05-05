@@ -6,7 +6,6 @@ import argparse
 import json
 from sklearn.ensemble import IsolationForest
 
-
 class Hounds:
     def __init__(self,
                  data: pd.DataFrame,
@@ -47,7 +46,6 @@ class Hounds:
                 match self.analyis_params['model']:
                     case "iso":
                         self.iso_anomaly_detection(agg_data, measure, active_track)
-
                     case "stl":
                         self.resid_anomaly_detection(agg_data, measure, active_track)
                     case _:
@@ -79,7 +77,7 @@ class Hounds:
         return
     
     def iso_forest(self,data_series):  
-        clf = IsolationForest(random_state=0, bootstrap=True)
+        clf = IsolationForest(random_state=0, contamination=.1, n_estimators=300, bootstrap=True)
         t = clf.fit_predict(data_series.values.reshape(-1,1))
         # clf.predict)
         return t

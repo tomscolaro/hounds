@@ -63,7 +63,7 @@ class Hounds:
 
     def iso_anomaly_detection(self, agg, measure, active_track):
         res = self.iso_forest(agg[measure])
-        indices = np.where(res == -1)[0]
+        indices = np.where(res == 0)[0]
         # print(anomaly_idx)
         if indices.size == 0:
                 return
@@ -78,9 +78,15 @@ class Hounds:
     
     def iso_forest(self,data_series):  
         clf = IsolationForest(random_state=0, contamination=self.analyis_params['contamination'], n_estimators=self.analyis_params['estimators'], bootstrap=True)
-        t = clf.fit_predict(data_series.values.reshape(-1,1))
-        # clf.predict)
-        return t
+        clf.fit(data_series.values.reshape(-1,1))
+        
+        scores = clf.decision_function(data_series.values.reshape(-1, 1))
+
+        threshold = np.percentile(scores, 5)
+
+
+
+        return (scores < threshold).astype(int)
 
     def resid_anomaly_detection(self, agg, measure, active_track):
             res_obj =  self.decompose_series(agg[measure])

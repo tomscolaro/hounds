@@ -81,12 +81,20 @@ class Hounds:
         clf.fit(data_series.values.reshape(-1,1))
         
         scores = clf.decision_function(data_series.values.reshape(-1, 1))
-
+        
         threshold = np.percentile(scores, self.analyis_params['percentile_thres'])
 
-
-
-        return (scores < threshold).astype(int)
+        # print(scores, (scores < threshold).astype(int))
+        match self.analyis_params['analysis-type']:
+            case "positive":
+                mult = (data_series.values > data_series.values.mean())
+            case "negative":
+                mult = (data_series.values <= data_series.values.mean())
+                
+            case _:
+                mult = 1
+        print(((scores < threshold) * mult  ).astype(int))
+        return ((scores < threshold) * mult  ).astype(int)
 
     def resid_anomaly_detection(self, agg, measure, active_track):
             res_obj =  self.decompose_series(agg[measure])
